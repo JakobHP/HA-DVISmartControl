@@ -45,7 +45,6 @@ from .const import (
     PARAM_UPDATE_BUTTONS,
     PARAM_UPDATE_GRAPHICS,
     PARAM_USER_SETTING,
-    URL_LOGIN,
     URL_MAIN,
     URL_PROCESS,
     URL_PUMP_INFO,
@@ -101,13 +100,14 @@ class DviSmartControlApiClient:
     async def authenticate(self) -> bool:
         """Log in to the portal. Returns True on success."""
         try:
-            # POST login form
+            # POST login form to process.php (matching the portal's form action)
             resp = await self._session.post(
-                f"{self._base_url}{URL_LOGIN}",
+                f"{self._base_url}{URL_PROCESS}",
                 data={
-                    "email": self._username,
-                    "password": self._password,
-                    "remember": "on",
+                    "user": self._username,
+                    "pass": self._password,
+                    "sublogin": "1",
+                    "Remember": "on",
                 },
                 timeout=aiohttp.ClientTimeout(total=DATA_TIMEOUT),
                 allow_redirects=True,
@@ -119,9 +119,9 @@ class DviSmartControlApiClient:
                 _LOGGER.debug("Successfully authenticated with DVI portal")
                 return True
 
-            # Check if we landed on the login page (failed auth)
+            # Check if we landed back on the login page (failed auth)
             text = await resp.text()
-            if "Log ind" in text or resp.url.path == URL_LOGIN:
+            if self._is_login_page(text):
                 self._authenticated = False
                 raise DviSmartControlAuthError("Invalid credentials")
 
@@ -144,7 +144,7 @@ class DviSmartControlApiClient:
 
     def _is_login_page(self, text: str) -> bool:
         """Check if the response is a login page (session expired)."""
-        return "Log ind!" in text and 'name="email"' in text
+        return "Log ind!" in text and 'name="user"' in text
 
     async def _post_process(
         self, data: dict[str, Any], timeout: float = DATA_TIMEOUT
