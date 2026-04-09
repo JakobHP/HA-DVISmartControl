@@ -19,10 +19,12 @@ from .const import (
     KEY_COMPRESSOR_HOURS,
     KEY_COMPRESSOR_RUNNING,
     KEY_CURRENT_ERRORS,
+    KEY_DISCHARGE_TEMP,
     KEY_ENERGY_CONSUMED_KW,
     KEY_ENERGY_CONSUMED_KWH,
     KEY_ENERGY_DELIVERED_KW,
     KEY_ENERGY_DELIVERED_KWH,
+    KEY_EVAPORATOR_TEMP,
     KEY_FAN_RUNNING,
     KEY_FLOW_RATE,
     KEY_HEATING_FLOW_TEMP,
@@ -39,8 +41,8 @@ from .const import (
     KEY_MANUFACTURING_NUMBER,
     KEY_OUTDOOR_TEMP,
     KEY_PUMP_POWER,
-    KEY_ROOM_TEMP,
     KEY_SOFTWARE_VERSION,
+    KEY_SUCTION_TEMP,
     KEY_SUPPLEMENTARY_HEAT_HOURS,
     KEY_SUPPLEMENTARY_HEATING_STATE,
     KEY_TANK_TEMP,
@@ -61,14 +63,19 @@ _TEMP_CLASS_MAP = {
     "value3": KEY_HOT_WATER_TEMP,
     "value1": KEY_HEATING_FLOW_TEMP,
     "value2": KEY_HEATING_RETURN_TEMP,
-    "value8": KEY_ROOM_TEMP,
+    "value6": KEY_EVAPORATOR_TEMP,
+    "value11": KEY_DISCHARGE_TEMP,
+    "value12": KEY_SUCTION_TEMP,
 }
 
-# GIF image patterns for component state detection
-# A1 = outdoor unit/fan, A4 = compressor area, A5 = expansion valve area
-# The number after the dash indicates state (0 = off typically)
-_RE_FAN_GIF = re.compile(r"A1-(\d+)\.gif")
-_RE_COMPRESSOR_GIF = re.compile(r"A4-(\d+)\.gif")
+# GIF image patterns for component state detection.
+# Format: A{component}-{model_config}[-4].gif
+# The first number is the pump model/configuration (fixed per install).
+# A trailing "-4" suffix means the component is actively running (animated GIF).
+# No "-4" suffix = static/off.
+# A4 = fan, A5 = compressor.
+_RE_FAN_GIF = re.compile(r"A4-\d+(-4)?\.gif")
+_RE_COMPRESSOR_GIF = re.compile(r"A5-\d+(-4)?\.gif")
 _RE_PUMP_ONOFF = re.compile(r"turnPumpOnOff\((\d+)\)")
 
 
@@ -372,20 +379,19 @@ class DviSmartControlApiClient:
             except ValueError:
                 data[KEY_LAST_UPDATE] = raw
 
-        # Extract component states from GIF image names
+        # Extract component states from GIF image names.
+        # A trailing "-4" in the filename means the component is running.
         images = soup.find_all("img")
         for img in images:
             src = img.get("src", "")
 
             fan_match = _RE_FAN_GIF.search(src)
             if fan_match:
-                # A1-0 = fan off, A1-1+ = fan running
-                data[KEY_FAN_RUNNING] = fan_match.group(1) != "0"
+                data[KEY_FAN_RUNNING] = fan_match.group(1) is not None
 
             comp_match = _RE_COMPRESSOR_GIF.search(src)
             if comp_match:
-                # A4-0 = off, A4-1+ = running (A4-5 means running at speed 5)
-                data[KEY_COMPRESSOR_RUNNING] = comp_match.group(1) != "0"
+                data[KEY_COMPRESSOR_RUNNING] = comp_match.group(1) is not None
 
         return data
 

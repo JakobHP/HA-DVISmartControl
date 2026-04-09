@@ -40,7 +40,9 @@ KEY_TANK_TEMP = "tank_temperature"
 KEY_HOT_WATER_TEMP = "hot_water_temperature"
 KEY_HEATING_FLOW_TEMP = "heating_flow_temperature"
 KEY_HEATING_RETURN_TEMP = "heating_return_temperature"
-KEY_ROOM_TEMP = "room_temperature"
+KEY_EVAPORATOR_TEMP = "evaporator_temperature"
+KEY_DISCHARGE_TEMP = "discharge_temperature"
+KEY_SUCTION_TEMP = "suction_temperature"
 
 # Status keys
 KEY_COMPRESSOR_HOURS = "compressor_hours"

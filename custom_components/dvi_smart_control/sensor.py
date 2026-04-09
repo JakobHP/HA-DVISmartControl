@@ -18,10 +18,12 @@ from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 from .const import (
     KEY_COMPRESSOR_HOURS,
     KEY_CURRENT_ERRORS,
+    KEY_DISCHARGE_TEMP,
     KEY_ENERGY_CONSUMED_KW,
     KEY_ENERGY_CONSUMED_KWH,
     KEY_ENERGY_DELIVERED_KW,
     KEY_ENERGY_DELIVERED_KWH,
+    KEY_EVAPORATOR_TEMP,
     KEY_FLOW_RATE,
     KEY_HEATING_FLOW_TEMP,
     KEY_HEATING_RETURN_TEMP,
@@ -29,7 +31,7 @@ from .const import (
     KEY_HOT_WATER_TEMP,
     KEY_LAST_UPDATE,
     KEY_OUTDOOR_TEMP,
-    KEY_ROOM_TEMP,
+    KEY_SUCTION_TEMP,
     KEY_SUPPLEMENTARY_HEAT_HOURS,
     KEY_TANK_TEMP,
 )
@@ -96,13 +98,30 @@ SENSOR_DESCRIPTIONS: tuple[DviSmartControlSensorEntityDescription, ...] = (
         state_class=SensorStateClass.MEASUREMENT,
         value_fn=lambda data: data.get(KEY_HEATING_RETURN_TEMP),
     ),
+    # ── Refrigerant temps (only available when compressor is running) ──
     DviSmartControlSensorEntityDescription(
-        key=KEY_ROOM_TEMP,
-        translation_key="room_temperature",
+        key=KEY_EVAPORATOR_TEMP,
+        translation_key="evaporator_temperature",
         device_class=SensorDeviceClass.TEMPERATURE,
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         state_class=SensorStateClass.MEASUREMENT,
-        value_fn=lambda data: data.get(KEY_ROOM_TEMP),
+        value_fn=lambda data: data.get(KEY_EVAPORATOR_TEMP),
+    ),
+    DviSmartControlSensorEntityDescription(
+        key=KEY_DISCHARGE_TEMP,
+        translation_key="discharge_temperature",
+        device_class=SensorDeviceClass.TEMPERATURE,
+        native_unit_of_measurement=UnitOfTemperature.CELSIUS,
+        state_class=SensorStateClass.MEASUREMENT,
+        value_fn=lambda data: data.get(KEY_DISCHARGE_TEMP),
+    ),
+    DviSmartControlSensorEntityDescription(
+        key=KEY_SUCTION_TEMP,
+        translation_key="suction_temperature",
+        device_class=SensorDeviceClass.TEMPERATURE,
+        native_unit_of_measurement=UnitOfTemperature.CELSIUS,
+        state_class=SensorStateClass.MEASUREMENT,
+        value_fn=lambda data: data.get(KEY_SUCTION_TEMP),
     ),
     # ── Hour counters ──
     DviSmartControlSensorEntityDescription(
