@@ -356,7 +356,10 @@ class DviSmartControlApiClient:
         data: dict[str, Any] = {}
         soup = BeautifulSoup(html, "html.parser")
 
-        # Extract temperatures from span.temp elements
+        # Extract temperatures from span.temp elements.
+        # Only set the key if a value is found — absent keys cause HA
+        # to report "Unavailable" (hidden in legends) rather than
+        # "Unknown" (shown as text).
         for css_class, key in _TEMP_CLASS_MAP.items():
             elem = soup.find("span", class_=css_class)
             if elem:
@@ -364,9 +367,7 @@ class DviSmartControlApiClient:
                 try:
                     data[key] = float(temp_str)
                 except ValueError:
-                    data[key] = None
-            else:
-                data[key] = None
+                    pass
 
         # Extract timestamp (portal returns UTC)
         date_elem = soup.find("div", class_="sensordate")
