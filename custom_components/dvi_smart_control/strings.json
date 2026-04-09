@@ -52,6 +52,7 @@
     "binary_sensor": {
       "compressor_running": { "name": "Compressor" },
       "fan_running": { "name": "Fan" },
+      "supplementary_heater_running": { "name": "Supplementary heater" },
       "has_errors": { "name": "Errors" }
     },
     "switch": {

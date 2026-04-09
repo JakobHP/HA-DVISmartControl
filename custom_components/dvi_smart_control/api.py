@@ -44,6 +44,7 @@ from .const import (
     KEY_SOFTWARE_VERSION,
     KEY_SUCTION_TEMP,
     KEY_SUPPLEMENTARY_HEAT_HOURS,
+    KEY_SUPPLEMENTARY_HEATER_RUNNING,
     KEY_SUPPLEMENTARY_HEATING_STATE,
     KEY_TANK_TEMP,
     PARAM_UPDATE_BUTTONS,
@@ -73,9 +74,10 @@ _TEMP_CLASS_MAP = {
 # The first number is the pump model/configuration (fixed per install).
 # A trailing "-4" suffix means the component is actively running (animated GIF).
 # No "-4" suffix = static/off.
-# A4 = fan, A5 = compressor.
+# A4 = fan, A5 = compressor, A6 = supplementary heater.
 _RE_FAN_GIF = re.compile(r"A4-\d+(-4)?\.gif")
 _RE_COMPRESSOR_GIF = re.compile(r"A5-\d+(-4)?\.gif")
+_RE_SUPPLEMENTARY_HEATER_GIF = re.compile(r"A6-\d+(-4)?\.gif")
 _RE_PUMP_ONOFF = re.compile(r"turnPumpOnOff\((\d+)\)")
 
 
@@ -261,6 +263,7 @@ class DviSmartControlApiClient:
             if not data.get(KEY_PUMP_POWER):
                 graphics_data.setdefault(KEY_COMPRESSOR_RUNNING, False)
                 graphics_data.setdefault(KEY_FAN_RUNNING, False)
+                graphics_data.setdefault(KEY_SUPPLEMENTARY_HEATER_RUNNING, False)
 
             data.update(graphics_data)
 
@@ -393,6 +396,10 @@ class DviSmartControlApiClient:
             comp_match = _RE_COMPRESSOR_GIF.search(src)
             if comp_match:
                 data[KEY_COMPRESSOR_RUNNING] = comp_match.group(1) is not None
+
+            heater_match = _RE_SUPPLEMENTARY_HEATER_GIF.search(src)
+            if heater_match:
+                data[KEY_SUPPLEMENTARY_HEATER_RUNNING] = heater_match.group(1) is not None
 
         return data
 

@@ -13,7 +13,12 @@ from homeassistant.components.binary_sensor import (
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
-from .const import KEY_COMPRESSOR_RUNNING, KEY_CURRENT_ERRORS, KEY_FAN_RUNNING
+from .const import (
+    KEY_COMPRESSOR_RUNNING,
+    KEY_CURRENT_ERRORS,
+    KEY_FAN_RUNNING,
+    KEY_SUPPLEMENTARY_HEATER_RUNNING,
+)
 from .coordinator import DviSmartControlConfigEntry, DviSmartControlCoordinator
 from .entity import DviSmartControlEntity
 
@@ -39,6 +44,12 @@ BINARY_SENSOR_DESCRIPTIONS: tuple[
         translation_key="fan_running",
         device_class=BinarySensorDeviceClass.RUNNING,
         is_on_fn=lambda data: data.get(KEY_FAN_RUNNING),
+    ),
+    DviSmartControlBinarySensorEntityDescription(
+        key="supplementary_heater_running",
+        translation_key="supplementary_heater_running",
+        device_class=BinarySensorDeviceClass.RUNNING,
+        is_on_fn=lambda data: data.get(KEY_SUPPLEMENTARY_HEATER_RUNNING),
     ),
     DviSmartControlBinarySensorEntityDescription(
         key="has_errors",

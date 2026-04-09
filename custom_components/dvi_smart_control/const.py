@@ -66,6 +66,7 @@ KEY_CURRENT_ERRORS = "current_errors"
 KEY_PUMP_POWER = "pump_power"
 KEY_COMPRESSOR_RUNNING = "compressor_running"
 KEY_FAN_RUNNING = "fan_running"
+KEY_SUPPLEMENTARY_HEATER_RUNNING = "supplementary_heater_running"
 
 # Setting state keys (current values from pumpchoice dialogs)
 KEY_HEATING_SYSTEM_STATE = "heating_system_state"
