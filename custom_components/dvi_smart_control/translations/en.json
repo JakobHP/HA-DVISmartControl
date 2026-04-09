@@ -1,0 +1,83 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "DVI Smart Control",
+        "description": "Enter your DVI SmartControl portal credentials.",
+        "data": {
+          "email": "Email",
+          "password": "Password"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Re-authenticate",
+        "description": "Your DVI SmartControl session expired. Please re-enter your credentials.",
+        "data": {
+          "email": "Email",
+          "password": "Password"
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "Invalid email or password.",
+      "cannot_connect": "Cannot connect to the DVI SmartControl portal.",
+      "unknown": "An unexpected error occurred."
+    },
+    "abort": {
+      "already_configured": "This account is already configured.",
+      "reauth_successful": "Re-authentication successful."
+    }
+  },
+  "entity": {
+    "sensor": {
+      "outdoor_temperature": { "name": "Outdoor temperature" },
+      "tank_temperature": { "name": "Tank temperature" },
+      "hot_water_temperature": { "name": "Hot water temperature" },
+      "heating_flow_temperature": { "name": "Heating flow temperature" },
+      "heating_return_temperature": { "name": "Heating return temperature" },
+      "room_temperature": { "name": "Room temperature" },
+      "compressor_hours": { "name": "Compressor hours" },
+      "hot_water_hours": { "name": "Hot water hours" },
+      "supplementary_heat_hours": { "name": "Supplementary heat hours" },
+      "energy_consumed_kwh": { "name": "Energy consumed" },
+      "energy_consumed_kw": { "name": "Energy consumed power" },
+      "energy_delivered_kwh": { "name": "Energy delivered" },
+      "energy_delivered_kw": { "name": "Energy delivered power" },
+      "flow_rate": { "name": "Flow rate" },
+      "last_update": { "name": "Last update" },
+      "current_errors": { "name": "Current errors" }
+    },
+    "binary_sensor": {
+      "compressor_running": { "name": "Compressor" },
+      "fan_running": { "name": "Fan" },
+      "has_errors": { "name": "Errors" }
+    },
+    "switch": {
+      "heating_system": { "name": "Heating system" },
+      "hot_water": { "name": "Hot water" },
+      "pump_power": { "name": "Pump power" }
+    },
+    "select": {
+      "supplementary_heating_mode": {
+        "name": "Supplementary heating mode",
+        "state": {
+          "off": "Off",
+          "automatic": "Automatic",
+          "reserve": "Reserve"
+        }
+      },
+      "hot_water_clock_mode": {
+        "name": "Hot water clock mode",
+        "state": {
+          "clock": "Clock",
+          "constant_on": "Constant on",
+          "constant_off": "Constant off"
+        }
+      }
+    },
+    "number": {
+      "heating_temp_offset": { "name": "Heating temperature offset" },
+      "hot_water_temp_setpoint": { "name": "Hot water temperature setpoint" }
+    }
+  }
+}
