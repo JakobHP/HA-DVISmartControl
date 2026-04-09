@@ -174,7 +174,7 @@ SENSOR_DESCRIPTIONS: tuple[DviSmartControlSensorEntityDescription, ...] = (
     DviSmartControlSensorEntityDescription(
         key=KEY_LAST_UPDATE,
         translation_key="last_update",
-        icon="mdi:clock-outline",
+        device_class=SensorDeviceClass.TIMESTAMP,
         value_fn=lambda data: data.get(KEY_LAST_UPDATE),
     ),
     DviSmartControlSensorEntityDescription(

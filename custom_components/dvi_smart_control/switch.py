@@ -10,10 +10,9 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
 from .const import (
-    KEY_COMPRESSOR_RUNNING,
-    KEY_FAN_RUNNING,
     KEY_HEATING_SYSTEM_STATE,
     KEY_HOT_WATER_STATE,
+    KEY_PUMP_POWER,
     SETTING_HEATING_SYSTEM,
     SETTING_HOT_WATER,
 )
@@ -92,6 +91,8 @@ class DviSmartControlSwitch(DviSmartControlEntity, SwitchEntity):
 
     async def async_turn_on(self, **kwargs: Any) -> None:
         """Turn the switch on."""
+        self._attr_is_on = True
+        self.async_write_ha_state()
         desc = self.entity_description
         await self.coordinator.client.async_set_user_setting(
             desc.setting_id, desc.on_value
@@ -100,6 +101,8 @@ class DviSmartControlSwitch(DviSmartControlEntity, SwitchEntity):
 
     async def async_turn_off(self, **kwargs: Any) -> None:
         """Turn the switch off."""
+        self._attr_is_on = False
+        self.async_write_ha_state()
         desc = self.entity_description
         await self.coordinator.client.async_set_user_setting(
             desc.setting_id, desc.off_value
@@ -112,7 +115,6 @@ class DviSmartControlPumpPowerSwitch(DviSmartControlEntity, SwitchEntity):
 
     _attr_translation_key = "pump_power"
     _attr_icon = "mdi:heat-pump-outline"
-    _attr_assumed_state = True
 
     def __init__(self, coordinator: DviSmartControlCoordinator) -> None:
         """Initialize the pump power switch."""
@@ -123,28 +125,19 @@ class DviSmartControlPumpPowerSwitch(DviSmartControlEntity, SwitchEntity):
 
     @property
     def is_on(self) -> bool | None:
-        """Return true if pump appears to be running.
-
-        Since there is no direct on/off state endpoint, we infer from
-        whether the compressor or fan data indicates activity. This is
-        an approximation — assumed_state is True.
-        """
-        data = self.coordinator.data
-        compressor = data.get(KEY_COMPRESSOR_RUNNING)
-        fan = data.get(KEY_FAN_RUNNING)
-        # If either is True the pump is definitely on.
-        # If both are False we can't be sure (it could be idle but on).
-        # Return None if we have no data at all.
-        if compressor is None and fan is None:
-            return None
-        return bool(compressor) or bool(fan)
+        """Return true if pump is on."""
+        return self.coordinator.data.get(KEY_PUMP_POWER)
 
     async def async_turn_on(self, **kwargs: Any) -> None:
         """Turn the pump on."""
+        self._attr_is_on = True
+        self.async_write_ha_state()
         await self.coordinator.client.async_turn_pump_on()
         await self.coordinator.async_request_refresh()
 
     async def async_turn_off(self, **kwargs: Any) -> None:
         """Turn the pump off."""
+        self._attr_is_on = False
+        self.async_write_ha_state()
         await self.coordinator.client.async_turn_pump_off()
         await self.coordinator.async_request_refresh()

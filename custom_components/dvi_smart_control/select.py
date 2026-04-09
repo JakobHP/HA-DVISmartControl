@@ -112,6 +112,8 @@ class DviSmartControlSelect(DviSmartControlEntity, SelectEntity):
         if value is None:
             _LOGGER.error("Unknown option %s for %s", option, desc.key)
             return
+        self._attr_current_option = option
+        self.async_write_ha_state()
         await self.coordinator.client.async_set_user_setting(
             desc.setting_id, value
         )

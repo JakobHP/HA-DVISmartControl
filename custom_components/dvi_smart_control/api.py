@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import asyncio
+from datetime import datetime, timezone
 import logging
 import re
 from typing import Any
@@ -37,6 +38,7 @@ from .const import (
     KEY_LAST_UPDATE,
     KEY_MANUFACTURING_NUMBER,
     KEY_OUTDOOR_TEMP,
+    KEY_PUMP_POWER,
     KEY_ROOM_TEMP,
     KEY_SOFTWARE_VERSION,
     KEY_SUPPLEMENTARY_HEAT_HOURS,
@@ -67,6 +69,7 @@ _TEMP_CLASS_MAP = {
 # The number after the dash indicates state (0 = off typically)
 _RE_FAN_GIF = re.compile(r"A1-(\d+)\.gif")
 _RE_COMPRESSOR_GIF = re.compile(r"A4-(\d+)\.gif")
+_RE_PUMP_ONOFF = re.compile(r"turnPumpOnOff\((\d+)\)")
 
 
 class DviSmartControlAuthError(Exception):
@@ -233,11 +236,26 @@ class DviSmartControlApiClient:
         async with self._lock:
             data: dict[str, Any] = {}
 
+            # Fetch buttons to determine pump power state
+            buttons_html = await self._post_process(
+                {PARAM_UPDATE_BUTTONS: "1"}
+            )
+            data.update(self._parse_buttons(buttons_html))
+
             # Fetch graphics (temperatures + component states)
             graphics_html = await self._post_process(
                 {PARAM_UPDATE_GRAPHICS: "1"}
             )
-            data.update(self._parse_graphics(graphics_html))
+            graphics_data = self._parse_graphics(graphics_html)
+
+            # When pump is off, graphics returns empty HTML.
+            # Keep temperatures as None (unavailable) but explicitly
+            # set compressor/fan to False rather than None.
+            if not data.get(KEY_PUMP_POWER):
+                graphics_data.setdefault(KEY_COMPRESSOR_RUNNING, False)
+                graphics_data.setdefault(KEY_FAN_RUNNING, False)
+
+            data.update(graphics_data)
 
             # Fetch status info (hour counters, install date, etc.)
             status_html = await self._get_pump_info(INFO_STATUS)
@@ -343,10 +361,16 @@ class DviSmartControlApiClient:
             else:
                 data[key] = None
 
-        # Extract timestamp
+        # Extract timestamp (portal returns UTC)
         date_elem = soup.find("div", class_="sensordate")
         if date_elem:
-            data[KEY_LAST_UPDATE] = date_elem.get_text(strip=True)
+            raw = date_elem.get_text(strip=True)
+            try:
+                data[KEY_LAST_UPDATE] = datetime.strptime(
+                    raw, "%Y-%m-%d %H:%M:%S"
+                ).replace(tzinfo=timezone.utc)
+            except ValueError:
+                data[KEY_LAST_UPDATE] = raw
 
         # Extract component states from GIF image names
         images = soup.find_all("img")
@@ -363,6 +387,20 @@ class DviSmartControlApiClient:
                 # A4-0 = off, A4-1+ = running (A4-5 means running at speed 5)
                 data[KEY_COMPRESSOR_RUNNING] = comp_match.group(1) != "0"
 
+        return data
+
+    @staticmethod
+    def _parse_buttons(html: str) -> dict[str, Any]:
+        """Parse the main buttons HTML for pump power state.
+
+        When pump is off, the button shows turnPumpOnOff(2) meaning "click to turn ON".
+        When pump is on, it shows turnPumpOnOff(4) meaning "click to toggle OFF".
+        So value 2 in the onclick = pump is currently OFF, value 4 = pump is ON.
+        """
+        data: dict[str, Any] = {}
+        match = _RE_PUMP_ONOFF.search(html)
+        if match:
+            data[KEY_PUMP_POWER] = match.group(1) != "2"
         return data
 
     @staticmethod

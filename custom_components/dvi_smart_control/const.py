@@ -60,7 +60,8 @@ KEY_FLOW_RATE = "flow_rate"
 # Error keys
 KEY_CURRENT_ERRORS = "current_errors"
 
-# State keys (derived from GIF image names)
+# State keys (derived from GIF image names and button HTML)
+KEY_PUMP_POWER = "pump_power"
 KEY_COMPRESSOR_RUNNING = "compressor_running"
 KEY_FAN_RUNNING = "fan_running"
 

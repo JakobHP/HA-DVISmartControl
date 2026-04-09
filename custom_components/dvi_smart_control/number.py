@@ -97,6 +97,8 @@ class DviSmartControlNumber(DviSmartControlEntity, NumberEntity):
 
     async def async_set_native_value(self, value: float) -> None:
         """Set the number value."""
+        self._attr_native_value = value
+        self.async_write_ha_state()
         desc = self.entity_description
         await self.coordinator.client.async_set_user_setting(
             desc.setting_id, int(value)
